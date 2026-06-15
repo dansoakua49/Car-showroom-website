@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Compare Cars — Imperial Motor House</title>
+    <link rel="icon" type="image/png" href="logo 2.jpeg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── TOKENS (Matched perfectly from global matrix) ───── */
+    :root {
+      --bg:        #0a0a0a;
+      --surface:   #131313;
+      --border:    #222222;
+      --mid:       #2a2a2a;
+      --accent:    #c0392b;       
+      --silver:    #a8a8a8;
+      --white:     #f0eeeb;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif:   'Cormorant Garamond', serif;
+      --font-body:    'Barlow', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── SCROLLBAR ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); }
+
+    /* ─── NAV (Consistent framework layout) ───────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 32px; 
+      position: relative; /* Context anchor for the dropdown position */
+    }
+    
+    /* Interactive Hamburger Icon Engine */
+    .nav-hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 210; }
+    .nav-hamburger span { display: block; width: 22px; height: 1px; background: var(--white); transition: transform 0.25s ease, opacity 0.25s ease, background 0.2s; }
+    .nav-hamburger:hover span { background: var(--accent); }
+    
+    /* Hamburger transforms into an 'X' state when menu panel is active */
+    .nav-hamburger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.active span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .nav-search { display: flex; align-items: center; gap: 8px; color: var(--silver); font-size: 13px; letter-spacing: .08em; cursor: pointer; }
+    
+    .nav-logo { position: absolute; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 22px; letter-spacing: .18em; color: var(--white); }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+    .nav-icon { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s; }
+    .nav-icon:hover { border-color: var(--accent); }
+    
+    .nav-cta {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: 9px 22px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--white);
+      transition: all .25s;
+    }
+    .nav-cta:hover { background: transparent; color: var(--white); border-color: var(--white); }
+
+/* ─── DROPDOWN WINDOW ELEMENT MATRIX ─────────────────── */
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 16px);
+      left: 0;
+      width: 260px;
+      background: #111111;
+      border: 1px solid var(--border);
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      
+      /* Smooth hidden -> visible transition properties */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    }
+
+    .nav-dropdown.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--silver);
+      padding: 14px 28px;
+      transition: all 0.2s ease;
+      border-left: 0 solid var(--accent);
+    }
+
+    .dropdown-item:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.02);
+      padding-left: 34px;
+      border-left: 3px solid var(--accent);
+    }
+	
+    /* ─── PAGE HERO ───────────────────────────────────────── */
+    .page-hero {
+      margin-top: 64px;
+      padding: 120px 24px 60px;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-hero-eyebrow { font-size: 11px; letter-spacing: .35em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+    .page-hero-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 80px); line-height: 1; letter-spacing: .04em; margin-bottom: 24px; }
+    .page-hero-sub { font-family: var(--font-serif); font-size: clamp(15px, 1.8vw, 20px); font-style: italic; color: var(--silver); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+
+    /* ─── COMPARISON STRUCTURES ──────────────────────────── */
+    .compare-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 64px 64px 0; background: var(--bg); }
+    
+    .car-slot { 
+      background: var(--surface); 
+      border: 1px solid var(--border); 
+      padding: 32px 24px; 
+      text-align: center; 
+      min-height: 240px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      position: relative; 
+      transition: border-color .3s, transform .3s; 
+    }
+    .car-slot.filled { border-color: var(--border); }
+    .car-slot.filled:hover { border-color: var(--accent); }
+    
+    .slot-placeholder { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #444; margin-top: 12px; font-weight: 500; }
+    
+    .slot-add { width: 48px; height: 48px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--silver); transition: all .3s; margin-bottom: 8px; background: transparent; }
+    .slot-add:hover { border-color: var(--accent); color: var(--accent); background: rgba(192,57,43,0.05); }
+    
+    .slot-car-name { font-family: var(--font-display); font-size: 24px; letter-spacing: .06em; margin-top: 12px; margin-bottom: 4px; }
+    .slot-car-sub { font-size: 12px; color: var(--silver); letter-spacing: .04em; }
+    .slot-car-price { font-family: var(--font-serif); font-style: italic; color: var(--accent); font-size: 20px; margin-top: 10px; }
+    
+    .slot-remove { position: absolute; top: 16px; right: 18px; background: none; border: none; color: #444; cursor: pointer; font-size: 16px; transition: color .2s; z-index: 5; }
+    .slot-remove:hover { color: var(--accent); }
+    
+    /* UNIVERSAL COMPONENT IMAGE FRAME WORK FOR VEHICLE SLOTS */
+    .slot-thumb-container { width: 100%; max-width: 180px; aspect-ratio: 16/10; overflow: hidden; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.4); border: 1px solid rgba(255,255,255,0.02); }
+    .inv-car-img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .car-slot:hover .inv-car-img { transform: scale(1.05); }
+
+    /* COMPARISON MATRIX TABLE */
+    .compare-table-wrap { padding: 40px 64px 100px; background: var(--bg); }
+    .compare-table { width: 100%; border-collapse: collapse; min-width: 850px; background: var(--surface); border: 1px solid var(--border); }
+    
+    /* Header styling setup */
+    .header-row th { background: #161616; border-bottom: 2px solid var(--border); padding: 28px 20px; text-align: center; width: 25%; }
+    .header-row th:first-child { text-align: left; padding-left: 32px; width: 25%; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #444; }
+    
+    .th-make { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 4px; }
+    .th-name { font-family: var(--font-display); font-size: 26px; letter-spacing: .06em; color: var(--white); }
+    .th-price { font-family: var(--font-serif); font-style: italic; color: var(--silver); font-size: 17px; margin-top: 6px; }
+
+    /* Category labels utility row markup */
+    .cat-row td { background: rgba(192,57,43,0.08); font-family: var(--font-body); font-size: 11px; letter-spacing: .25em; text-transform: uppercase; padding: 14px 32px; font-weight: 500; color: var(--accent); border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); }
+    
+    /* Standard interactive layout spec matrix lines */
+    .spec-row { border-bottom: 1px solid var(--border); transition: background .2s; }
+    .spec-row:hover { background: rgba(255,255,255,.01); }
+    
+    .spec-name { font-size: 13px; color: var(--silver); letter-spacing: .06em; padding: 18px 32px; font-weight: 400; text-align: left; }
+    .spec-icon { color: var(--accent); margin-right: 12px; vertical-align: middle; opacity: 0.8; }
+    
+    .spec-val { font-size: 14px; letter-spacing: .04em; padding: 18px 20px; text-align: center; color: var(--silver); }
+    .spec-val.best { color: var(--white); font-weight: 500; background: rgba(255,255,255,0.01); }
+    .spec-val.best::after { content: " ★"; color: var(--accent); font-size: 11px; vertical-align: baseline; }
+    .spec-val.check { color: #4ade80; }
+    .spec-val.cross { color: #f87171; }
+
+    /* Verdict matrix rows styling */
+    .verdict-row { padding: 32px 24px !important; border-bottom: 1px solid var(--border); background: #111; vertical-align: top; }
+    .verdict-row:first-child { font-size: 12px; color: var(--silver); letter-spacing: .08em; text-transform: uppercase; padding-left: 32px !important; font-weight: 500; }
+    
+    .verdict-title { font-family: var(--font-display); font-size: 18px; letter-spacing: .1em; margin-bottom: 8px; color: var(--white); text-transform: uppercase; }
+    .verdict-text { font-size: 13px; color: var(--silver); line-height: 1.6; }
+    
+    .winner-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(192,57,43,0.12); border: 1px solid var(--accent); padding: 5px 12px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; font-weight: 500; }
+
+    /* Interactive button matrix calls */
+    .cta-row td { padding: 24px; background: var(--surface); text-align: center; }
+    .cta-row td:first-child { background: var(--surface); }
+    
+    .btn-outline, .btn-primary {
+      display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; padding: 12px 24px; border: 1px solid var(--border); color: var(--white); transition: all .25s; cursor: pointer; text-align: center; min-width: 160px;
+    }
+    .btn-outline:hover { background: var(--white); color: #000; border-color: var(--white); }
+    
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: #a93226; border-color: #a93226; }
+
+    /* FADE ANIMATION MANAGEMENT STYLES */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── FOOTER ──────────────────────────────────────────── */
+    footer { border-top: 1px solid var(--border); background: #080808; padding: 60px 64px 36px; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+    .footer-brand-name { font-family: var(--font-display); font-size: 28px; letter-spacing: .14em; margin-bottom: 12px; }
+    .footer-brand-name span { color: var(--accent); }
+    .footer-brand-tagline { font-family: var(--font-serif); font-style: italic; color: var(--silver); font-size: 14px; line-height: 1.7; max-width: 260px; }
+    .footer-socials { display: flex; gap: 12px; margin-top: 24px; }
+    .footer-social { width: 34px; height: 34px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--silver); cursor: pointer; transition: all .2s; font-family: var(--font-display); letter-spacing: .05em; }
+    .footer-social:hover { border-color: var(--accent); color: var(--accent); }
+    .footer-col-title { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { font-size: 13px; color: var(--silver); letter-spacing: .04em; transition: color .2s; }
+    .footer-col ul li a:hover { color: var(--white); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; }
+    .footer-copy { font-size: 11px; color: #444; letter-spacing: .08em; }
+    .footer-legal { display: flex; gap: 24px; }
+    .footer-legal a { font-size: 11px; color: #444; letter-spacing: .08em; transition: color .2s; }
+    .footer-legal a:hover { color: var(--silver); }
+
+    /* ─── RESPONSIVE OVERRIDES ────────────────────────────── */
+    @media(max-width: 1100px) {
+      nav { padding: 0 24px; }
+      .compare-selector { grid-template-columns: 1fr; padding: 32px 24px 0; gap: 16px; }
+      .compare-table-wrap { padding: 32px 24px 60px; }
+      footer { padding: 48px 24px 28px; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width: 700px) {
+      .footer-top { grid-template-columns: 1fr; }
+      .nav-logo { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ─────────────────────────────────────────────── -->
+  <nav>
+    <div class="nav-left">
+      <!-- Interactive Hamburger Trigger -->
+      <div class="nav-hamburger" onclick="toggleDropdown(event)">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="nav-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </div>
+
+      <!-- Live Dropdown Portal Panel -->
+      <div class="nav-dropdown" id="globalNavDropdown">
+        <a href="index 2.html" class="dropdown-item">Home</a>
+        <a href="inventory.html" class="dropdown-item">Inventory</a>
+        <a href="compare.html" class="dropdown-item">Comparing Vehicles</a>
+        <a href="financing.html" class="dropdown-item">Financing Matrix</a>
+        <a href="booking.html" class="dropdown-item">Book a Test Drive</a>
+        <a href="about.html" class="dropdown-item">About Us</a>
+        <a href="faqs.html" class="dropdown-item">FAQs</a>
+      </div>
+    </div>
+
+    <a href="index.html" class="nav-logo">IMPERIAL<span>.</span>MOTOR</a>
+
+    <div class="nav-right">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <a href="booking.html" class="nav-cta">Book a Viewing</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ────────────────────────────────────────────── -->
+  <div class="page-hero">
+    <p class="page-hero-eyebrow">Side-by-Side</p>
+    <h1 class="page-hero-title">Compare<br><span style="color:var(--accent)">Vehicles</span></h1>
+    <p class="page-hero-sub">Spec out up to three vehicles side-by-side to find your perfect match.</p>
+  </div>
+
+  <!-- ── CAR SELECTORS ───────────────────────────────────── -->
+  <div class="compare-selector">
+    <!-- Slot 1 -->
+    <div class="car-slot filled fade-up">
+      <button class="slot-remove" onclick="clearSlot(this)">✕</button>
+      <div class="slot-thumb-container">
+        <img src="M4 competition.jpg" alt="BMW M4 Competition" class="inv-car-img">
+      </div>
+      <div class="slot-car-name">BMW M4 Competition</div>
+      <div class="slot-car-sub">2024 · Coupé · Petrol</div>
+      <div class="slot-car-price">£86,500</div>
+    </div>
+
+    <!-- Slot 2 -->
+    <div class="car-slot filled fade-up">
+      <button class="slot-remove" onclick="clearSlot(this)">✕</button>
+      <div class="slot-thumb-container">
+        <img src="911 Carrera S.jpg" alt="Porsche 911 Carrera S" class="inv-car-img">
+      </div>
+      <div class="slot-car-name">Porsche 911 Carrera S</div>
+      <div class="slot-car-sub">2023 · Coupé · Petrol</div>
+      <div class="slot-car-price">£112,000</div>
+    </div>
+
+    <!-- Slot 3 -->
+    <div class="car-slot filled fade-up">
+      <button class="slot-remove" onclick="clearSlot(this)">✕</button>
+      <div class="slot-thumb-container">
+        <img src="Taycan Turbo S.jpg" alt="Porsche Taycan Turbo S" class="inv-car-img">
+      </div>
+      <div class="slot-car-name">Porsche Taycan Turbo S</div>
+      <div class="slot-car-sub">2024 · Saloon · Electric</div>
+      <div class="slot-car-price">£153,200</div>
+    </div>
+  </div>
+
+  <!-- ── COMPARISON MATRIX GRID ──────────────────────────── -->
+  <div class="compare-table-wrap fade-up">
+    <table class="compare-table">
+      <thead>
+        <tr class="header-row">
+          <th>Specification</th>
+          <th><div class="th-make">BMW</div><div class="th-name">M4 Competition</div><div class="th-price">£86,500</div></th>
+          <th><div class="th-make">Porsche</div><div class="th-name">911 Carrera S</div><div class="th-price">£112,000</div></th>
+          <th><div class="th-make">Porsche</div><div class="th-name">Taycan Turbo S</div><div class="th-price">£153,200</div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- PERFORMANCE -->
+        <tr class="cat-row"><td colspan="4">⚡ Performance</td></tr>
+        <tr class="spec-row">
+          <td class="spec-name">
+            <svg class="spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Power Output
+          </td>
+          <td class="spec-val">503 bhp</td>
+          <td class="spec-val">450 bhp</td>
+          <td class="spec-val best">750 bhp</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">
+            <svg class="spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>0–62 mph
+          </td>
+          <td class="spec-val">3.8 sec</td>
+          <td class="spec-val">3.7 sec</td>
+          <td class="spec-val best">2.8 sec</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">
+            <svg class="spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Torque
+          </td>
+          <td class="spec-val">650 Nm</td>
+          <td class="spec-val">530 Nm</td>
+          <td class="spec-val best">1,050 Nm</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">
+            <svg class="spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Top Speed
+          </td>
+          <td class="spec-val">290 km/h</td>
+          <td class="spec-val best">308 km/h</td>
+          <td class="spec-val">260 km/h</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Drivetrain</td>
+          <td class="spec-val">RWD / xDrive AWD</td>
+          <td class="spec-val">RWD</td>
+          <td class="spec-val">AWD</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Gearbox</td>
+          <td class="spec-val">8-spd Auto</td>
+          <td class="spec-val">8-spd PDK</td>
+          <td class="spec-val">2-spd Auto</td>
+        </tr>
+
+        <!-- ENGINE -->
+        <tr class="cat-row"><td colspan="4">🔧 Engine & Powertrain</td></tr>
+        <tr class="spec-row">
+          <td class="spec-name">Engine Type</td>
+          <td class="spec-val">3.0L Twin-Turbo I6</td>
+          <td class="spec-val">3.0L Twin-Turbo Flat-6</td>
+          <td class="spec-val">Dual Electric Motor</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Fuel Type</td>
+          <td class="spec-val">Petrol</td>
+          <td class="spec-val">Petrol</td>
+          <td class="spec-val best">Electric</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Fuel / Range</td>
+          <td class="spec-val">9.8L/100km</td>
+          <td class="spec-val">9.2L/100km</td>
+          <td class="spec-val best">504 km range</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">CO₂ Emissions</td>
+          <td class="spec-val">222 g/km</td>
+          <td class="spec-val">209 g/km</td>
+          <td class="spec-val best">0 g/km</td>
+        </tr>
+
+        <!-- DIMENSIONS -->
+        <tr class="cat-row"><td colspan="4">📐 Dimensions & Weight</td></tr>
+        <tr class="spec-row">
+          <td class="spec-name">Kerb Weight</td>
+          <td class="spec-val best">1,730 kg</td>
+          <td class="spec-val">1,515 kg</td>
+          <td class="spec-val">2,295 kg</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Wheelbase</td>
+          <td class="spec-val">2,857 mm</td>
+          <td class="spec-val best">2,450 mm</td>
+          <td class="spec-val">2,900 mm</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Boot Space</td>
+          <td class="spec-val">480 L</td>
+          <td class="spec-val">128 L</td>
+          <td class="spec-val best">446 L</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Seating</td>
+          <td class="spec-val">4 seats</td>
+          <td class="spec-val">2+2 seats</td>
+          <td class="spec-val">5 seats</td>
+        </tr>
+
+        <!-- TECH & FEATURES -->
+        <tr class="cat-row"><td colspan="4">💻 Technology & Features</td></tr>
+        <tr class="spec-row">
+          <td class="spec-name">Infotainment Screen</td>
+          <td class="spec-val">12.3" Curved</td>
+          <td class="spec-val">10.9" Touchscreen</td>
+          <td class="spec-val best">16.8" Curved</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Head-Up Display</td>
+          <td class="spec-val check">✓ Standard</td>
+          <td class="spec-val check">✓ Optional</td>
+          <td class="spec-val check">✓ Standard</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Wireless CarPlay</td>
+          <td class="spec-val check">✓</td>
+          <td class="spec-val check">✓</td>
+          <td class="spec-val check">✓</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Adaptive Cruise</td>
+          <td class="spec-val check">✓</td>
+          <td class="spec-val check">✓</td>
+          <td class="spec-val check">✓</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Over-the-Air Updates</td>
+          <td class="spec-val check">✓</td>
+          <td class="spec-val cross">✗</td>
+          <td class="spec-val check">✓</td>
+        </tr>
+
+        <!-- PRICE -->
+        <tr class="cat-row"><td colspan="4">£ Pricing</td></tr>
+        <tr class="spec-row">
+          <td class="spec-name">Starting Price</td>
+          <td class="spec-val best">£86,500</td>
+          <td class="spec-val">£112,000</td>
+          <td class="spec-val">£153,200</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Est. Monthly (PCP)</td>
+          <td class="spec-val best">From £1,320/mo</td>
+          <td class="spec-val">From £1,710/mo</td>
+          <td class="spec-val">From £2,340/mo</td>
+        </tr>
+        <tr class="spec-row">
+          <td class="spec-name">Warranty</td>
+          <td class="spec-val">3 yr / 60k mi</td>
+          <td class="spec-val">3 yr / unlimited</td>
+          <td class="spec-val best">4 yr / unlimited</td>
+        </tr>
+
+        <!-- VERDICT -->
+        <tr class="cat-row"><td colspan="4">🏆 Verdict</td></tr>
+        <tr>
+          <td class="verdict-row">Our assessment</td>
+          <td class="verdict-row">
+            <div class="verdict-title">Best Value</div>
+            <div class="verdict-text">The accessible entry point into our collection. Exceptional everyday performance with M-badge prestige.</div>
+          </td>
+          <td class="verdict-row">
+            <div class="winner-badge">Driver's Choice</div>
+            <div class="verdict-title">Purist's Pick</div>
+            <div class="verdict-text">The definitive sports car. Unmatched driver connection and handling that rewards skill over technology.</div>
+          </td>
+          <td class="verdict-row">
+            <div class="verdict-title">Future-Forward</div>
+            <div class="verdict-text">The fastest of the three to 62 mph. Zero emissions, supercar performance, and advanced technology parameters.</div>
+          </td>
+        </tr>
+        
+        <!-- CTA BUTTON ACTIONS -->
+        <tr class="cta-row">
+          <td></td>
+          <td><a href="booking.html" class="btn-outline">Book Test Drive</a></td>
+          <td><a href="booking.html" class="btn-primary">Book Test Drive</a></td>
+          <td><a href="booking.html" class="btn-outline">Book Test Drive</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-brand-name">IMPERIAL<span>.</span>MOTOR</div>
+        <p class="footer-brand-tagline">A curated selection of the world's finest automobiles. Where precision meets prestige.</p>
+        <div class="footer-socials">
+          <div class="footer-social">IG</div>
+          <div class="footer-social">FB</div>
+          <div class="footer-social">YT</div>
+          <div class="footer-social">X</div>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <p class="footer-col-title">Inventory</p>
+        <ul>
+          <li><a href="inventory.html">All Vehicles</a></li>
+          <li><a href="inventory.html">New Arrivals</a></li>
+          <li><a href="inventory.html">Classic Cars</a></li>
+          <li><a href="inventory.html">Electric</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <p class="footer-col-title">Services</p>
+        <ul>
+          <li><a href="services.html">Financing</a></li>
+          <li><a href="services.html">Trade-In</a></li>
+          <li><a href="booking.html">Test Drives</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <p class="footer-col-title">Company</p>
+        <ul>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="#">FAQs</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 Imperial Motor House Ltd. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  /* Dropdown UI Menu Toggle Component Functionality */
+    function toggleDropdown(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('globalNavDropdown');
+      const hamburger = event.currentTarget;
+      
+      dropdown.classList.toggle('active');
+      hamburger.classList.toggle('active');
+    }
+
+    // Global document trigger to auto-close menu if a user clicks outside bounds
+    window.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('globalNavDropdown');
+      const hamburger = document.querySelector('.nav-hamburger');
+      
+      if (dropdown && dropdown.classList.contains('active')) {
+        if (!dropdown.contains(event.target)) {
+          dropdown.classList.remove('active');
+          if (hamburger) hamburger.classList.remove('active');
+        }
+      }
+    });
+	
+    /* Menu Navigation Actions Mock placeholder */
+    function toggleMenu() {
+      console.log('menu context action complete');
+    }
+
+    /* Functional script handles stripping dynamic element layouts securely */
+    function clearSlot(btn) {
+      const slot = btn.parentElement;
+      slot.classList.remove('filled');
+      slot.innerHTML = `
+        <button class="slot-add">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <p class="slot-placeholder">Add a vehicle</p>
+      `;
+    }
+
+    /* Intersectional triggers for elegant presentation loads */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(el => {
+        if (el.isIntersecting) el.target.classList.add('visible');
+      });
+    }, { threshold: 0.05 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
